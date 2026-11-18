@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My First Proton App</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px;
+      background: #0e1115; color: #edf2f4; font: 16px/1.55 system-ui, sans-serif;
+    }
+    main { width: 100%; max-width: 620px; }
+    h1 { font-size: clamp(32px, 8vw, 60px); line-height: 1; letter-spacing: -.045em; }
+    button { background: #b6f767; color: #15200c; border: 0; border-radius: 8px; padding: 10px 15px; font: inherit; cursor: pointer; }
+    button:disabled { cursor: wait; opacity: .65; }
+    section { margin-top: 24px; padding: 18px; border: 1px solid #2a323c; border-radius: 12px; }
+    section h2 { margin: 0 0 8px; font-size: 19px; }
+    .results { display: grid; grid-template-columns: max-content 1fr; gap: 6px 15px; }
+    .results dd { margin: 0; overflow-wrap: anywhere; color: #a1abb6; }
+    .results [data-result="pass"] { color: #b6f767; }
+    .results [data-result="fail"] { color: #ffc299; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Hello, Proton!</h1>
+    <p>Servo renders this page. Edit <code>web/index.html</code> to build your app.</p>
+    <button type="button" id="counter">Clicks <span id="count">0</span></button>
+    <section aria-labelledby="gpu-title">
+      <h2 id="gpu-title">Graphics capabilities</h2>
+      <button type="button" id="gpu-test">Run graphics tests</button>
+      <dl class="results" aria-live="polite">
+        <dt>WebGL 1</dt><dd id="webgl-status">Ready to test</dd>
+        <dt>WebGL 2</dt><dd id="webgl2-status">Ready to test</dd>
+        <dt>WebGPU</dt><dd id="webgpu-status">Ready to test</dd>
+      </dl>
+    </section>
+  </main>
+  <script>
+    let count = 0;
+    document.getElementById("counter").addEventListener("click", () => {
+      document.getElementById("count").textContent = String(++count);
+    });
+
+    function testWebGL(version) {
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = 1;
+      const gl = canvas.getContext(version);
+      if (!gl) throw new Error("Could not create a graphics context.");
+      try {
+        const pixel = new Uint8Array(4);
+        gl.clearColor(1, 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+        if (gl.getError() !== gl.NO_ERROR || pixel[0] !== 255 || pixel[3] !== 255) {
+          throw new Error("Pixel readback did not match the expected value.");
+        }
+        return "Passed · Pixel read back";
+      } finally {
+        gl.getExtension("WEBGL_lose_context")?.loseContext();
+      }
+    }
+
+    async function testWebGPU() {
+      if (!window.isSecureContext) throw new Error("WebGPU requires a secure context.");
+      if (!navigator.gpu) throw new Error("The WebGPU API is unavailable.");
+      const adapter = await navigator.gpu.requestAdapter();
+      if (!adapter) throw new Error("No compatible GPU adapter was available for this page.");
+      const device = await adapter.requestDevice();
+      try {
+        const shader = device.createShaderModule({ code: `
+          @group(0) @binding(0) var<storage, read_write> result: array<u32>;
+          @compute @workgroup_size(1)
+          fn main() { result[0] = 42u; }
+        ` });
+        const pipeline = device.createComputePipeline({
+          layout: "auto", compute: { module: shader, entryPoint: "main" }
+        });
+        const size = Uint32Array.BYTES_PER_ELEMENT;
+        const output = device.createBuffer({
+          size, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
+        });
+        const readback = device.createBuffer({
+          size, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST
+        });
+        const group = device.createBindGroup({
+          layout: pipeline.getBindGroupLayout(0),
+          entries: [{ binding: 0, resource: { buffer: output } }]
+        });
+        const encoder = device.createCommandEncoder();
+        const pass = encoder.beginComputePass();
+        pass.setPipeline(pipeline);
+        pass.setBindGroup(0, group);
+        pass.dispatchWorkgroups(1);
+        pass.end();
+        encoder.copyBufferToBuffer(output, 0, readback, 0, size);
+        device.queue.submit([encoder.finish()]);
+        await readback.mapAsync(GPUMapMode.READ);
+        const value = new Uint32Array(readback.getMappedRange())[0];
+        readback.unmap();
+        if (value !== 42) throw new Error("GPU compute returned an unexpected result.");
+        return "Passed · GPU computation verified";
+      } finally {
+        device.destroy();
+      }
+    }
+
+    async function showResult(id, run) {
+      const output = document.getElementById(id);
+      output.textContent = "Testing…";
+      delete output.dataset.result;
+      try {
+        output.textContent = await run();
+        output.dataset.result = "pass";
+      } catch (error) {
+        output.textContent = error.message;
+        output.dataset.result = "fail";
+      }
+    }
+
+    const graphicsButton = document.getElementById("gpu-test");
+    graphicsButton.addEventListener("click", async () => {
+      graphicsButton.disabled = true;
+      try {
+        await Promise.all([
+          showResult("webgl-status", () => testWebGL("webgl")),
+          showResult("webgl2-status", () => testWebGL("webgl2")),
+          showResult("webgpu-status", testWebGPU)
+        ]);
+      } finally {
+        graphicsButton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

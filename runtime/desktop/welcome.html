@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Proton.js — Getting Started</title>
+  <style>
+    :root {
+      color: #edf2f4;
+      background: #0e1115;
+      font: 16px/1.6 "Segoe UI", system-ui, sans-serif;
+      --muted: #a1abb6;
+      --line: #2a323c;
+      --accent: #b6f767;
+      --mono: "Cascadia Code", Consolas, monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; }
+    .shell { max-width: 1000px; margin: auto; padding: 0 44px; }
+    header {
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      min-height: 72px; border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; }
+    .mark {
+      display: grid; place-items: center; width: 34px; height: 34px;
+      background: var(--accent); color: #15200c; border-radius: 8px;
+      font: 700 16px var(--mono);
+    }
+    .engine { font: 12px var(--mono); color: var(--muted); }
+    main { padding: 50px 0 36px; }
+    h1 { margin: 0; font-size: clamp(38px, 6vw, 68px); line-height: 1.04; letter-spacing: -.06em; }
+    h1 span { color: var(--accent); }
+    .intro { margin: 16px 0 32px; max-width: 54ch; color: var(--muted); }
+    .workspace { display: grid; grid-template-columns: 1fr 1.18fr; gap: 16px; }
+    section, .terminal {
+      min-width: 0; border: 1px solid var(--line); border-radius: 12px;
+      background: #151a21;
+    }
+    section { padding: 20px; }
+    h2 { margin: 0 0 8px; font-size: 17px; }
+    p { margin: 0; }
+    section p, .result, footer { font-size: 13px; color: var(--muted); }
+    code, pre { font-family: var(--mono); }
+    .setup { padding: 12px; margin: 14px 0 0; background: #0e1115; border-radius: 8px; overflow: auto; }
+    .terminal { overflow: hidden; }
+    .terminal-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      min-height: 45px; padding: 0 18px; border-bottom: 1px solid var(--line);
+      font: 12px var(--mono); color: var(--muted);
+    }
+    .terminal-bar strong { color: var(--accent); font-weight: 400; }
+    .targets { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 18px 12px; }
+    button {
+      padding: 7px 12px; border: 1px solid var(--line); border-radius: 6px;
+      background: #10151a; color: #c6cfd7; font: inherit; font-size: 13px; cursor: pointer;
+    }
+    button:hover { border-color: var(--muted); }
+    button[aria-pressed="true"] { background: #202c1c; border-color: #607f46; color: var(--accent); }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .command { display: flex; align-items: baseline; gap: 11px; padding: 0 18px; }
+    .command span { color: var(--accent); font: 15px var(--mono); }
+    .command code { overflow-wrap: anywhere; font-size: clamp(15px, 2.4vw, 21px); }
+    .result { margin: 10px 18px 15px; overflow-wrap: anywhere; }
+    footer { padding: 16px 0; border-top: 1px solid var(--line); }
+    @media (max-width: 650px) {
+      .shell { padding: 0 20px; }
+      main { padding-top: 30px; }
+      .workspace { grid-template-columns: 1fr; }
+      header { min-height: 56px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand"><span class="mark" aria-hidden="true">P.</span> Proton.js</div>
+      <div class="engine">Servo 0.8.0</div>
+    </header>
+    <main>
+      <h1>Welcome to <span>Proton.</span></h1>
+      <p class="intro">Build your interface with HTML, CSS, and JavaScript. Package it for Windows, Linux, or Android with Proton Batcher.</p>
+      <div class="workspace">
+        <section aria-labelledby="first-project">
+          <h2 id="first-project">Create your first project</h2>
+          <p>Run these commands in a terminal, then edit <code>web/index.html</code>.</p>
+          <pre class="setup"><code>pb init hello
+cd hello</code></pre>
+        </section>
+        <section class="terminal" aria-label="Proton Batcher build commands">
+          <div class="terminal-bar"><span>Proton Batcher</span><strong>pb CLI</strong></div>
+          <div class="targets" role="group" aria-label="Build target">
+            <button type="button" data-platform="win" aria-pressed="true">Windows</button>
+            <button type="button" data-platform="linux" aria-pressed="false">Linux</button>
+            <button type="button" data-platform="android" aria-pressed="false">Android</button>
+          </div>
+          <div class="command"><span aria-hidden="true">$</span><code id="build-command">pb -build -win</code></div>
+          <p class="result" id="build-result" aria-live="polite">Windows · dist/win/Proton.exe</p>
+        </section>
+      </div>
+    </main>
+    <footer>Run <code>pb --help</code> in a terminal for build options.</footer>
+  </div>
+  <script>
+    const targets = document.querySelectorAll("[data-platform]");
+    const results = {
+      win: "Windows · dist/win/Proton.exe",
+      linux: "Linux · dist/linux/proton",
+      android: "Android ARM64 · dist/android/Proton-debug.apk"
+    };
+    for (const button of targets) {
+      button.addEventListener("click", () => {
+        const platform = button.dataset.platform;
+        for (const target of targets) {
+          target.setAttribute("aria-pressed", String(target === button));
+        }
+        document.getElementById("build-command").textContent = "pb -build -" + platform;
+        document.getElementById("build-result").textContent = results[platform];
+      });
+    }
+  </script>
+</body>
+</html>

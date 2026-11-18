@@ -1,0 +1,32 @@
+[package]
+name = "proton-runtime"
+version = "0.2.0"
+edition = "2024"
+publish = false
+
+[[bin]]
+name = "proton"
+path = "src/main.rs"
+
+[workspace]
+
+[dependencies]
+servo = { git = "https://github.com/servo/servo.git", rev = "4e136d8ef31b7c4748fbfac606ca463f3efd7537", default-features = false, features = [
+    "bundled", "js_jit", "subtlecrypto", "webgl", "webgpu",
+] }
+servo-embedder-traits = { git = "https://github.com/servo/servo.git", rev = "4e136d8ef31b7c4748fbfac606ca463f3efd7537" }
+euclid = "0.22"
+keyboard-types = "0.8.3"
+http = "1"
+mime_guess = "2"
+percent-encoding = "2"
+rustls = { version = "0.23", default-features = false, features = ["aws_lc_rs", "std", "tls12"] }
+url = "2.5"
+webrender_api = "0.70"
+winit = "0.30.13"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_UI_WindowsAndMessaging"] }
+
+[profile.release]
+strip = "debuginfo"
