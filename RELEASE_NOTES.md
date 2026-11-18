@@ -4,12 +4,13 @@ Proton.js 0.2.0 is a standalone Servo-based runtime for HTML, CSS, and JavaScrip
 
 ## Downloads
 
-- **Windows x64** includes `Proton.exe` and the standalone `pb.exe`. Extract the ZIP and open `Proton.exe` for the English getting-started screen.
+- **Windows x64 installer** installs `Proton.exe` and `pb.exe` for the current user. The optional user PATH entry is enabled by default. Open a new terminal to run `pb`. [Installer source](https://github.com/Digit-srt/proton.js/blob/main/installer/proton.iss)
+- **Windows x64 portable ZIP** includes `Proton.exe` and the standalone `pb.exe`. Extract the ZIP and open `Proton.exe` for the getting-started screen.
 - **Three.js demo for Windows x64** includes an offline 3D scene. Extract the full ZIP and open its `Proton.exe`. Keep the `web` directory beside the executable.
 - **Android ARM64 debug APK** is a test build for Android 10 or later.
 - **Source code** includes the Rust runtime, Proton Batcher, the Android template, and the Three.js example.
 
-Use `SHA256SUMS.txt` to verify the downloadable files.
+Use `SHA256SUMS.txt` to verify the original downloads and `Proton-0.2.0-windows-x64-setup.exe.sha256` to verify the installer.
 
 ## Verification
 

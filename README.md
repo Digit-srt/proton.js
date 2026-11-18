@@ -4,9 +4,9 @@ Proton.js is a Rust application framework that renders HTML, CSS, and JavaScript
 
 ## Quick start
 
-1. Open the [v0.2.0 preview release](https://github.com/Digit-srt/proton.js/releases/tag/v0.2.0) and extract the Windows x64 ZIP.
-2. Launch `Proton.exe` to see the welcome screen, or extract the separate Three.js demo ZIP and launch its `Proton.exe`.
-3. Add the directory containing `pb.exe` to your PATH. From a terminal, create and build a project.
+1. Run the [Windows x64 installer](https://github.com/Digit-srt/proton.js/releases/download/v0.2.0/Proton-0.2.0-windows-x64-setup.exe). The default installation adds `pb` to your user PATH without administrator access.
+2. Open **Proton.js** from the Start menu to see the welcome screen.
+3. Open a new terminal to create and build a project.
 
 ```sh
 pb init hello
@@ -15,6 +15,8 @@ pb -build -win
 ```
 
 Open `dist/win/Proton.exe`. Edit `web/index.html` and keep your CSS, JavaScript, images, and other static files under `web/`. Keep that directory beside the executable when moving a packaged app.
+
+The [release page](https://github.com/Digit-srt/proton.js/releases/tag/v0.2.0) also has the portable ZIP and the separate Three.js demo ZIP.
 
 ## Build targets
 
@@ -37,6 +39,8 @@ pb -build -win --welcome
 ```
 
 Run the last command on Windows from the repository root. The `--welcome` option packages the built-in getting-started screen on any supported build target. The first desktop build compiles Servo. Later builds reuse the `.proton/` cache. Set `CARGO_TARGET_DIR` to a shared absolute directory to reuse desktop build artifacts across projects.
+
+To build the Windows installer, extract `Proton-0.2.0-windows-x64.zip` into `dist/installer-payload` and compile `installer/proton.iss` with Inno Setup 6.7. The installer is written to `dist/installer`.
 
 ## Graphics and examples
 
